@@ -1,4 +1,4 @@
-# CloudPros Web Store (local, AWS-free)
+# CloudPros Web Store
 
 Minimal store composed of services: products (SQLite, seeded from FakeStore), carts (Redis),
 orders (checkout + cart clear), users (JWT auth with SQLite), and a static web UI proxied via Nginx.
