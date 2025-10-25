@@ -34,7 +34,19 @@ and apply them properly.
 - Add `env.example` file containing all required variables.
 - Test the final product end-to-end.
 
-##### Note: I also tested using the Traefik reverse-proxy tool. see `docker-compose.traefik.yml`
+#### Reverse-proxy used for the project and differences
+- Nginx -> `docker-compose.yml`
+- Traefik -> `docker-compose.traefik.yml`
+
+#### What reverse-proxy does 
+
+| Role             |    Brief description                              |
+|------------------|---------------------------------------------------|
+| Load balancing   | Distributes traffic across containers             |
+| Security         | It hides the internal IP address                  |
+| Caching          | Caches static files or responses to boost speed   |
+| Compression      | Compress responses before sending them. `Traefik` |
+| Request routing  | It routes paths or domains to different services  |
 
 #### Acceptance:
 - docker compose config result
@@ -44,7 +56,7 @@ and apply them properly.
 ![docker-compose-up](./images/docker-compose-up.png)
 
 ![health-status](./images/health-status.png)
-I have added the health checks as part of the image.
+I have added the health checks as part of the image. So no need for redundant healthchecks in the docker compose yml.
 
 | Service  | Image                                    | Size    |
 |----------|------------------------------------------|---------|
