@@ -1,7 +1,7 @@
 import os, uuid, logging
 from typing import Dict, Any
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import httpx
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -14,6 +14,11 @@ class CheckoutRequest(BaseModel):
     userId: str
     full_name: str
     email: str
+
+    @field_validator('userId', mode='before')
+    @classmethod
+    def convert_user_id(cls, v):
+        return str(v)
 
 app = FastAPI(title="CloudPros Orders")
 
