@@ -10,12 +10,22 @@ services:
     volumes:
       - ./web-ui/nginx.conf:/etc/nginx/nginx.conf:ro  # This takes precedence
     depends_on:
-      - products
-      - carts
-      - orders
-      - users
+      products:
+        condition: service_healthy
+      carts:
+        condition: service_healthy
+      orders:
+        condition: service_healthy
+      users:
+        condition: service_healthy
     networks:
       - web
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   products:
     build:
@@ -32,6 +42,14 @@ services:
       - products_data:/data
     networks:
       - web
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    
 
   carts:
     build:
@@ -48,6 +66,13 @@ services:
     networks:
       - web
       - carts-cache
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   
   redis:
     image: redis:alpine
@@ -75,6 +100,12 @@ services:
       - .env
     networks:
       - web
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   users:
     build:
@@ -91,6 +122,12 @@ services:
     networks:
       - web
       - db-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8015/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   db:
     image: postgres:16
@@ -107,7 +144,7 @@ services:
       - db-network
       - web
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U retailuser -d retaildb"] 
       interval: 30s
       timeout: 10s
       retries: 3

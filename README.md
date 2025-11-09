@@ -1,89 +1,104 @@
-# CloudPros Web Store
+# Retail Store - Containerized Application
 
-Minimal store composed of services: products (SQLite, seeded from FakeStore), carts (Redis),
-orders (checkout + cart clear), users (JWT auth with SQLite), and a static web UI proxied via Nginx.
+A containerized retail store application with microservices architecture using Docker and Docker Compose.
 
-## Run
+## 📦 Services
+
+| Service | Base Image | Size | Port |
+|---------|-----------|------|------|
+| products | python:3.11-slim | 298 MB | 8001 |
+| orders | python:3.11-slim | 264 MB | 8004 |
+| carts | python:3.11-slim | 267 MB | 8002 |
+| users | python:3.11-slim | 334 MB | 8015 |
+| web-ui | nginx:alpine | 81 MB | 8080 |
+| postgres | postgres:16 | 657 MB | 5432 |
+| redis | redis:alpine | 99 MB | 6379 |
+
+## 🚀 Setup Instructions
+
+### Prerequisites
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-docker compose up --build
-open http://localhost:8080
+git clone <repository-url>
+cd retail-store
 ```
 
-## Notes
-- First start will fetch products from https://fakestoreapi.com/ and cache them locally (SQLite).
-- Cart is stored in Redis, keyed by `userId` (guest or auth user id).
-- Sign in / Sign up are local only; token stored in localStorage.
-- To reset (and reseed), run: `docker compose down -v` and then `docker compose up --build`.
-
-## Orchestration, Health and Evidence
-
--The aim is to set up the final orchestration layer, ensure stack reproducibility, and confirm all services connect successfully and are reachable through the reverse proxy.
-
-#### Scope
-- To create a `docker-compose.yml` file with the below services
-  - ###### Services
-    - web-ui - also acting as a reverse-proxy
-    - products
-    - orders
-    - carts
-    - users 
-    - db
-    - redis
-- Show understanding of `depends_on` and and `healthcheck` conditions 
-and apply them properly.
-- Add `env.example` file containing all required variables.
-- Test the final product end-to-end.
-
-#### Reverse-proxy used for the project and differences
-- Nginx -> `docker-compose.yml`
-- Traefik -> `docker-compose.traefik.yml`
-
-#### What reverse-proxy does 
-
-| Role             |    Brief description                              |
-|------------------|---------------------------------------------------|
-| Load balancing   | Distributes traffic across containers             |
-| Security         | It hides the internal IP address                  |
-| Caching          | Caches static files or responses to boost speed   |
-| Compression      | Compress responses before sending them. `Traefik` |
-| Request routing  | It routes paths or domains to different services  |
-
-#### Acceptance:
-- docker compose config result
-![docker-compose-config](./images/docker-compose-config.png)
-
-- docker compose up --build -d result 
-![docker-compose-up](./images/docker-compose-up.png)
-
-![health-status](./images/health-status.png)
-I have added the health checks as part of the image. So no need for redundant healthchecks in the docker compose yml.
-
-| Service  | Image                                    | Size    |
-|----------|------------------------------------------|---------|
-| web-ui   | retail-store-web-ui:latest               | 18.2MB  |
-| products | retail-store-products:latest             | 129MB   |
-| orders   | retail-store-orders:latest               | 103MB   |
-| carts    | retail-store-carts:latest                | 129MB   |
-| users    | retail-store-users:latest                | 153MB   |
-
-#### Tested the set-up using the below commands 
-
+2. **Create environment file**
 ```bash
-# Shows we can access the web-ui container 
-curl -i http://localhost:8080
-
-# Shows we can access the orders container via reverse proxy
-curl -i http://localhost:8080/api/orders/health
-
-# Shows we can access the carts container via reverse proxy
-curl -i http://localhost:8080/api/carts/health
-
-# Shows we can access the products container via reverse proxy
-curl -i http://localhost:8080/api/products/health
-
-# Shows I can retrieve the products list
-curl -i http://localhost:8080/api/products/products
-
-# Shows we can access the users container via reverse proxy
-curl -i http://localhost:8080/api/users/health
+cp .env.example .env
 ```
+
+3. **Start the application**
+```bash
+docker compose up -d
+```
+
+4. **Verify all services are healthy**
+```bash
+docker compose ps
+```
+
+All services should show status as `Up (healthy)`.
+
+5. **Access the application**
+```
+http://localhost:8080
+```
+
+## 🛠️ Common Commands
+
+**Start services:**
+```bash
+docker compose up -d
+```
+
+**Stop services:**
+```bash
+docker compose down
+```
+
+**Rebuild services:**
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
+
+**View logs:**
+```bash
+docker compose logs
+docker compose logs <service-name>
+```
+
+**Check status:**
+```bash
+docker compose ps
+```
+
+## ✨ Features Implemented
+
+- ✅ Multi-stage Docker builds for Python services
+- ✅ Minimal base images (alpine/slim variants)
+- ✅ Non-root user execution (UID 1000)
+- ✅ Health checks for all services
+- ✅ Network isolation (3 separate networks)
+- ✅ Volume persistence for databases
+- ✅ .dockerignore files for optimized builds
+- ✅ Environment-based configuration
+
+## 📊 Evidence of Success
+
+### All Services Healthy
+![All services healthy](images/healthy.png)
+
+### Application Running
+![Application in browser](images/app-running.png)
+
+### Image Sizes
+![Docker images](images/image-sizes.png)
+
+Application accessible at http://localhost:8080
